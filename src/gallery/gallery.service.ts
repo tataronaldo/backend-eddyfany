@@ -1,32 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-
-export interface CreateGalleryDto {
-  title: string;
-  description?: string;
-  mediaUrl: string;
-  mediaType: string;
-  category: string;
-  thumbnail?: string;
-  duration?: number;
-  fileSize?: number;
-  tags?: string[];
-  uploadedBy: string;
-}
-
-export interface UpdateGalleryDto {
-  title?: string;
-  description?: string;
-  mediaUrl?: string;
-  mediaType?: string;
-  category?: string;
-  thumbnail?: string;
-  duration?: number;
-  fileSize?: number;
-  tags?: string[];
-  isPublished?: boolean;
-  isFeatured?: boolean;
-}
+import { CreateGalleryDto } from './dto/create-gallery.dto';
+import { UpdateGalleryDto } from './dto/update-gallery.dto';
 
 @Injectable()
 export class GalleryService {
