@@ -7,7 +7,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   async onModuleInit() {
     try {
       // Use require to bypass TypeScript import issues
-      const { PrismaClient } = require('@prisma/client');
+      const { PrismaClient } = require('../../generated/prisma');
       
       // Initialize Prisma Client - v6.19 has stable MongoDB support
       this.prisma = new PrismaClient({
