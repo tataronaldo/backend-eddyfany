@@ -1,0 +1,273 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Sermon {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  content     String
+  videoUrl    String?
+  audioUrl    String?
+  thumbnail   String?
+  documentUrl String?  // For sermon transcripts/documents
+  date        DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  published   Boolean  @default(false)
+  tags        String[]
+
+  @@map("sermons")
+}
+
+model BlogPost {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  slug        String   @unique
+  content     String
+  excerpt     String?
+  featured    Boolean  @default(false)
+  thumbnail   String?
+  documentUrl String?  // For blog PDFs/documents
+  author      String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  published   Boolean  @default(false)
+  tags        String[]
+  category    String?
+
+  @@map("blog_posts")
+}
+
+model Project {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  content     String
+  image       String?
+  documentUrl String?  // For project proposals/documents
+  status      String   @default("planning") // planning, active, completed, cancelled
+  startDate   DateTime?
+  endDate     DateTime?
+  targetAmount Float?
+  currentAmount Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  published   Boolean  @default(false)
+  tags        String[]
+
+  @@map("projects")
+}
+
+model Event {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String
+  content     String?
+  image       String?
+  documentUrl String?  // For event agendas/documents
+  startDate   DateTime
+  endDate     DateTime?
+  location    String?
+  isOnline    Boolean  @default(false)
+  maxAttendees Int?
+  currentAttendees Int @default(0)
+  registrationDeadline DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  published   Boolean  @default(false)
+  tags        String[]
+  
+  // Relations
+  registrations EventRegistration[]
+
+  @@map("events")
+}
+
+model Donation {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  amount        Float
+  currency      String   @default("USD")
+  donorName     String?
+  donorEmail    String?
+  donorPhone    String?
+  isAnonymous   Boolean  @default(false)
+  paymentMethod String   // stripe, paypal, bank_transfer, etc.
+  paymentId      String?
+  status        String   @default("pending") // pending, completed, failed, refunded
+  designation   String?  // general, specific_project, etc.
+  message       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("donations")
+}
+
+model Member {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName   String
+  lastName    String
+  email       String   @unique
+  phone       String?
+  address     String?
+  dateOfBirth DateTime?
+  joinDate    DateTime @default(now())
+  isActive    Boolean  @default(true)
+  role        String   @default("member") // member, leader, admin
+  avatar      String?
+  bio         String?
+  skills      String[]
+  interests   String[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("members")
+}
+
+model PrayerRequest {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String?
+  phone     String?
+  request   String
+  isPublic  Boolean  @default(false)
+  isAnswered Boolean @default(false)
+  answeredAt DateTime?
+  answeredBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("prayer_requests")
+}
+
+model Testimonial {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String?
+  phone     String?
+  message   String
+  rating    Int      @default(5)
+  isApproved Boolean @default(false)
+  approvedAt DateTime?
+  approvedBy String?
+  isPublic  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("testimonials")
+}
+
+model ContactMessage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  readAt    DateTime?
+  replied   Boolean  @default(false)
+  repliedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("contact_messages")
+}
+
+// Event Registration Model
+model EventRegistration {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  eventId     String
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  age         Int?
+  specialNeeds String?
+  registeredAt DateTime @default(now())
+  status      String   @default("registered") // registered, cancelled, attended
+  notes       String?
+  
+  // Relations
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@map("event_registrations")
+}
+
+// Admin Authentication Model
+model AdminUser {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  username    String   @unique
+  email       String   @unique
+  password    String
+  firstName   String
+  lastName    String
+  role        String   @default("admin") // admin, super_admin
+  isActive    Boolean  @default(true)
+  lastLoginAt DateTime?
+  loginAttempts Int     @default(0)
+  lockedUntil DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("admin_users")
+}
+
+// Gallery Model
+model Gallery {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  title       String
+  description String?
+  mediaUrl    String
+  mediaType   String   // video, audio, image
+  category    String   // ministry, construction, general, worship, outreach
+  thumbnail   String?
+  duration    Int?     // For video/audio in seconds
+  fileSize    Float?   // File size in MB
+  tags        String[]
+  isPublished Boolean  @default(false)
+  isFeatured  Boolean  @default(false)
+  uploadedBy  String   // Admin user ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("gallery")
+}
+
+// Reaction System Models
+model Reaction {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  type        ReactionType
+  targetType  ReactionTargetType
+  targetId    String
+  userId      String?  // Optional for anonymous reactions
+  ipAddress   String?  // For tracking without user identification
+  createdAt   DateTime @default(now())
+
+  @@map("reactions")
+}
+
+enum ReactionType {
+  LIKE
+  LOVE
+  AMEN
+  PRAISE
+  HALLELUJAH
+}
+
+enum ReactionTargetType {
+  SERMON
+  BLOG_POST
+  EVENT
+  TESTIMONIAL
+  GALLERY_ITEM
+}
